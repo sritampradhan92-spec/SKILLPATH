@@ -1,0 +1,5 @@
+{
+  "ignoreCommand": false,
+  "buildCommand": "npm install",
+  "startCommand": "node server/index.js"
+}
