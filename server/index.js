@@ -118,6 +118,10 @@ async function start() {
     res.json({ dbConnected, usingMongo: true, timestamp: new Date().toISOString() });
   });
 
+  app.get('/api/test-delete', (_req, res) => {
+    res.json({ message: 'DELETE endpoint is accessible without authentication' });
+  });
+
   app.delete('/api/registrations/:id', async (req, res) => {
     try {
       const id = req.params.id;
