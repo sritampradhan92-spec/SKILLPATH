@@ -124,10 +124,10 @@ async function start() {
     res.json({ dbConnected, usingMongo: true, timestamp: new Date().toISOString() });
   });
 
-  // DELETE registration endpoint - NO AUTHENTICATION REQUIRED
+  // DELETE registration endpoint - NO AUTHENTICATION REQUIRED - FINAL VERSION v2
   app.delete('/api/registrations/:id', async (req, res) => {
     const id = req.params.id;
-    console.log(`🗑️  [DELETE] Received delete request for ID: ${id}`);
+    console.log(`🗑️  [DELETE v2] Received delete request for ID: ${id}`);
     
     try {
       // Strategy 1: Try as MongoDB ObjectId
