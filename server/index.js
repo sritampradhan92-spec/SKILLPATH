@@ -125,20 +125,36 @@ async function start() {
   app.delete('/api/registrations/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      // Try to parse as MongoDB ObjectId, fallback to string comparison
-      let deleteResult;
-      try {
-        deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
-      } catch (objIdErr) {
-        // If not a valid ObjectId, try string comparison
-        deleteResult = await registrationsCollection.deleteOne({ id: id });
+      
+      // Try multiple approaches to find and delete the record
+      let deleteResult = null;
+      
+      // First, try as ObjectId (if it's a valid hex string)
+      if (id.match(/^[0-9a-f]{24}$/i)) {
+        try {
+          deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
+          if (deleteResult.deletedCount === 1) {
+            return res.json({ success: true });
+          }
+        } catch (e) {
+          // Fall through to next approach
+        }
       }
       
+      // Try as string id field
+      deleteResult = await registrationsCollection.deleteOne({ id: id });
       if (deleteResult.deletedCount === 1) {
-        res.json({ success: true });
-      } else {
-        res.status(404).json({ error: 'Not found' });
+        return res.json({ success: true });
       }
+      
+      // Try as _id string
+      deleteResult = await registrationsCollection.deleteOne({ _id: id });
+      if (deleteResult.deletedCount === 1) {
+        return res.json({ success: true });
+      }
+      
+      // If nothing found
+      res.status(404).json({ error: 'Registration not found' });
     } catch (err) {
       console.error('Delete error', err);
       res.status(500).json({ error: 'Failed to delete registration' });
