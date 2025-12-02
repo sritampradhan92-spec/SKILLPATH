@@ -110,11 +110,11 @@ const AdminDashboard = () => {
     if (!confirmed) return;
 
     const doDelete = async () => {
-      // attempt central delete
       const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      let deletedFromApi = false;
+      
       try {
-        console.log(`Attempting to delete ID: ${id} from ${apiBase}/api/registrations/${id}`);
+        console.log(`🗑️ Attempting DELETE: ${apiBase}/api/registrations/${id}`);
+        
         const resp = await fetch(`${apiBase}/api/registrations/${id}`, {
           method: 'DELETE',
           headers: {
@@ -122,37 +122,40 @@ const AdminDashboard = () => {
           },
         });
         
-        const respText = await resp.text();
-        console.log(`Delete response status: ${resp.status}`, respText);
+        console.log(`Response status: ${resp.status}`);
         
         if (resp.ok) {
-          deletedFromApi = true;
-          console.log('Successfully deleted from API');
-        } else {
+          console.log('✅ Successfully deleted from API');
+          const updated = users.filter((u) => u.id !== id);
+          setUsers(updated);
           try {
-            const errorData = JSON.parse(respText);
-            console.error('API delete error:', errorData);
-            alert(`Failed to delete: ${errorData.error || 'Unknown error'}`);
-          } catch {
-            alert(`Failed to delete: Server error (${resp.status})`);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          } catch (err) {
+            console.error("Failed to update storage:", err);
           }
+          alert('Registration deleted successfully!');
           return;
         }
-      } catch (err) {
-        console.error('Central delete failed', err);
-        alert(`Error connecting to server: ${err}`);
-        return;
-      }
-
-      // Only remove from UI if API delete was successful
-      if (deletedFromApi) {
-        const updated = users.filter((u) => u.id !== id);
-        setUsers(updated);
+        
+        // Handle error response
+        let errorMsg = `Server error (${resp.status})`;
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        } catch (err) {
-          console.error("Failed to update storage after delete:", err);
+          const respText = await resp.text();
+          if (respText) {
+            const errorData = JSON.parse(respText);
+            errorMsg = errorData.error || errorMsg;
+          }
+        } catch (e) {
+          // If can't parse JSON, use status code message
+          errorMsg = `Delete failed with status ${resp.status}`;
         }
+        
+        console.error(`❌ Delete failed: ${errorMsg}`);
+        alert(`Failed to delete: ${errorMsg}`);
+        
+      } catch (err) {
+        console.error('❌ Network error during delete:', err);
+        alert(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     };
 
