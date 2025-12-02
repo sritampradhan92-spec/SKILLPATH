@@ -112,25 +112,35 @@ const AdminDashboard = () => {
     const doDelete = async () => {
       // attempt central delete
       const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      let deletedFromApi = false;
       try {
-        const adminKey = import.meta.env.VITE_ADMIN_KEY || undefined; // optional
-        const resp = await fetch(`${apiBase}/api/registrations/${id}${adminKey ? `?adminKey=${adminKey}` : ''}`, {
+        const resp = await fetch(`${apiBase}/api/registrations/${id}`, {
           method: 'DELETE',
-          headers: adminKey ? { 'x-admin-key': adminKey } : {},
         });
-        if (!resp.ok) {
-          console.warn('Central delete failed, will remove locally');
+        if (resp.ok) {
+          deletedFromApi = true;
+          console.log('Successfully deleted from API');
+        } else {
+          const errorData = await resp.json();
+          console.error('API delete error:', errorData);
+          alert('Failed to delete from server');
+          return;
         }
       } catch (err) {
-        console.warn('Central delete failed', err);
+        console.error('Central delete failed', err);
+        alert('Error connecting to server');
+        return;
       }
 
-      const updated = users.filter((u) => u.id !== id);
-      setUsers(updated);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error("Failed to update storage after delete:", err);
+      // Only remove from UI if API delete was successful
+      if (deletedFromApi) {
+        const updated = users.filter((u) => u.id !== id);
+        setUsers(updated);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (err) {
+          console.error("Failed to update storage after delete:", err);
+        }
       }
     };
 

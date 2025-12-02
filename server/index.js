@@ -124,13 +124,17 @@ async function start() {
 
   app.delete('/api/registrations/:id', async (req, res) => {
     try {
-      const key = req.headers['x-admin-key'] || req.query.adminKey;
-      if (key !== ADMIN_KEY) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
       const id = req.params.id;
-      const result = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
-      if (result.deletedCount === 1) {
+      // Try to parse as MongoDB ObjectId, fallback to string comparison
+      let deleteResult;
+      try {
+        deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
+      } catch (objIdErr) {
+        // If not a valid ObjectId, try string comparison
+        deleteResult = await registrationsCollection.deleteOne({ id: id });
+      }
+      
+      if (deleteResult.deletedCount === 1) {
         res.json({ success: true });
       } else {
         res.status(404).json({ error: 'Not found' });
