@@ -125,6 +125,7 @@ async function start() {
   app.delete('/api/registrations/:id', async (req, res) => {
     try {
       const id = req.params.id;
+      console.log(`Delete request for ID: ${id}`);
       
       // Try multiple approaches to find and delete the record
       let deleteResult = null;
@@ -132,28 +133,36 @@ async function start() {
       // First, try as ObjectId (if it's a valid hex string)
       if (id.match(/^[0-9a-f]{24}$/i)) {
         try {
+          console.log(`Trying to delete as ObjectId: ${id}`);
           deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
+          console.log(`ObjectId delete result: ${deleteResult.deletedCount} deleted`);
           if (deleteResult.deletedCount === 1) {
             return res.json({ success: true });
           }
         } catch (e) {
+          console.log(`ObjectId deletion failed, trying alternatives`, e.message);
           // Fall through to next approach
         }
       }
       
       // Try as string id field
+      console.log(`Trying to delete as id field: ${id}`);
       deleteResult = await registrationsCollection.deleteOne({ id: id });
+      console.log(`id field delete result: ${deleteResult.deletedCount} deleted`);
       if (deleteResult.deletedCount === 1) {
         return res.json({ success: true });
       }
       
       // Try as _id string
+      console.log(`Trying to delete as _id string: ${id}`);
       deleteResult = await registrationsCollection.deleteOne({ _id: id });
+      console.log(`_id string delete result: ${deleteResult.deletedCount} deleted`);
       if (deleteResult.deletedCount === 1) {
         return res.json({ success: true });
       }
       
       // If nothing found
+      console.log(`No registration found with ID: ${id}`);
       res.status(404).json({ error: 'Registration not found' });
     } catch (err) {
       console.error('Delete error', err);

@@ -114,21 +114,33 @@ const AdminDashboard = () => {
       const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000";
       let deletedFromApi = false;
       try {
+        console.log(`Attempting to delete ID: ${id} from ${apiBase}/api/registrations/${id}`);
         const resp = await fetch(`${apiBase}/api/registrations/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
+        
+        const respText = await resp.text();
+        console.log(`Delete response status: ${resp.status}`, respText);
+        
         if (resp.ok) {
           deletedFromApi = true;
           console.log('Successfully deleted from API');
         } else {
-          const errorData = await resp.json();
-          console.error('API delete error:', errorData);
-          alert('Failed to delete from server');
+          try {
+            const errorData = JSON.parse(respText);
+            console.error('API delete error:', errorData);
+            alert(`Failed to delete: ${errorData.error || 'Unknown error'}`);
+          } catch {
+            alert(`Failed to delete: Server error (${resp.status})`);
+          }
           return;
         }
       } catch (err) {
         console.error('Central delete failed', err);
-        alert('Error connecting to server');
+        alert(`Error connecting to server: ${err}`);
         return;
       }
 
