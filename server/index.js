@@ -10,9 +10,12 @@ const app = express();
 // CORS configuration for frontend domains
 const allowedOrigins = [
   'https://stirring-sprinkles-636235.netlify.app',
+  'https://skillpathindia01.netlify.app',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:8080',
+  'http://localhost:8081',
+  'http://localhost:8082',
 ];
 
 app.use(cors({
@@ -32,6 +35,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Explicit OPTIONS handler for preflight requests
+app.options('*', cors());
 
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI;
