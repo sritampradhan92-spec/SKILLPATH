@@ -7,31 +7,11 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration for frontend domains
-const allowedOrigins = [
-  'https://stirring-sprinkles-636235.netlify.app',
-  'https://skillpathindia01.netlify.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:8080',
-  'http://localhost:8081',
-  'http://localhost:8082',
-];
-
+// Allow ALL CORS requests - no restrictions
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all origins for now
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-admin-key'],
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: '*',
 }));
 
 app.use(express.json());
