@@ -124,6 +124,11 @@ async function start() {
     res.json({ dbConnected, usingMongo: true, timestamp: new Date().toISOString() });
   });
 
+  // Test endpoint to verify deployment
+  app.get('/api/version', (_req, res) => {
+    res.json({ version: 'v2-no-auth-delete', deployed: new Date().toISOString() });
+  });
+
   // DELETE registration endpoint - NO AUTHENTICATION REQUIRED - FINAL VERSION v2
   app.delete('/api/registrations/:id', async (req, res) => {
     const id = req.params.id;
