@@ -29,6 +29,7 @@ let registrationsCollection;
 let dbConnected = false;
 
 async function start() {
+  console.log('🚀 SERVER v1.0.1 - NO AUTH CHECK ON DELETE - Starting...');
   if (!MONGODB_URI) {
     console.warn('MONGODB_URI not set — starting server without DB connection (will fallback to in-memory behavior).');
     // Keep a simple in-memory store as a fallback
