@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+nixpacksVersion = "latest"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyMaxRetries = 5
+
