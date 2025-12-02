@@ -124,57 +124,40 @@ async function start() {
     res.json({ dbConnected, usingMongo: true, timestamp: new Date().toISOString() });
   });
 
-  app.get('/api/test-delete', (_req, res) => {
-    res.json({ message: 'DELETE endpoint is accessible without authentication' });
-  });
-
+  // DELETE registration endpoint - NO AUTHENTICATION REQUIRED
   app.delete('/api/registrations/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log(`🗑️  [DELETE] Received delete request for ID: ${id}`);
+    
     try {
-      const id = req.params.id;
-      console.log(`[DELETE] Processing delete request for ID: ${id}`);
-      
-      // Try multiple approaches to find and delete the record
-      let deleteResult = null;
-      
-      // First, try as ObjectId (if it's a valid hex string)
+      // Strategy 1: Try as MongoDB ObjectId
       if (id.match(/^[0-9a-f]{24}$/i)) {
-        try {
-          console.log(`[DELETE] Attempting ObjectId format: ${id}`);
-          deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
-          console.log(`[DELETE] ObjectId attempt result: ${deleteResult.deletedCount} deleted`);
-          if (deleteResult.deletedCount === 1) {
-            console.log(`[DELETE] Successfully deleted with ObjectId`);
-            return res.json({ success: true, message: 'Deleted using ObjectId' });
-          }
-        } catch (e) {
-          console.log(`[DELETE] ObjectId attempt failed:`, e.message);
+        const result = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
+        if (result.deletedCount > 0) {
+          console.log(`✅ Deleted via ObjectId`);
+          return res.json({ success: true });
         }
       }
       
-      // Try as string id field
-      console.log(`[DELETE] Attempting id field format: ${id}`);
-      deleteResult = await registrationsCollection.deleteOne({ id: id });
-      console.log(`[DELETE] id field attempt result: ${deleteResult.deletedCount} deleted`);
-      if (deleteResult.deletedCount === 1) {
-        console.log(`[DELETE] Successfully deleted with id field`);
-        return res.json({ success: true, message: 'Deleted using id field' });
+      // Strategy 2: Try as _id string field
+      const result2 = await registrationsCollection.deleteOne({ _id: id });
+      if (result2.deletedCount > 0) {
+        console.log(`✅ Deleted via _id string`);
+        return res.json({ success: true });
       }
       
-      // Try as _id string
-      console.log(`[DELETE] Attempting _id string format: ${id}`);
-      deleteResult = await registrationsCollection.deleteOne({ _id: id });
-      console.log(`[DELETE] _id string attempt result: ${deleteResult.deletedCount} deleted`);
-      if (deleteResult.deletedCount === 1) {
-        console.log(`[DELETE] Successfully deleted with _id string`);
-        return res.json({ success: true, message: 'Deleted using _id string' });
+      // Strategy 3: Try as id field
+      const result3 = await registrationsCollection.deleteOne({ id: id });
+      if (result3.deletedCount > 0) {
+        console.log(`✅ Deleted via id field`);
+        return res.json({ success: true });
       }
       
-      // If nothing found
-      console.log(`[DELETE] No registration found with ID: ${id}`);
-      res.status(404).json({ error: 'Registration not found' });
+      console.log(`❌ Not found`);
+      res.status(404).json({ error: 'Not found' });
     } catch (err) {
-      console.error('[DELETE] Error:', err);
-      res.status(500).json({ error: 'Failed to delete registration: ' + err.message });
+      console.error(`❌ Delete error:`, err.message);
+      res.status(500).json({ error: err.message });
     }
   });
 
