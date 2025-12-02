@@ -125,7 +125,7 @@ async function start() {
   app.delete('/api/registrations/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      console.log(`Delete request for ID: ${id}`);
+      console.log(`[DELETE] Processing delete request for ID: ${id}`);
       
       // Try multiple approaches to find and delete the record
       let deleteResult = null;
@@ -133,40 +133,42 @@ async function start() {
       // First, try as ObjectId (if it's a valid hex string)
       if (id.match(/^[0-9a-f]{24}$/i)) {
         try {
-          console.log(`Trying to delete as ObjectId: ${id}`);
+          console.log(`[DELETE] Attempting ObjectId format: ${id}`);
           deleteResult = await registrationsCollection.deleteOne({ _id: new ObjectId(id) });
-          console.log(`ObjectId delete result: ${deleteResult.deletedCount} deleted`);
+          console.log(`[DELETE] ObjectId attempt result: ${deleteResult.deletedCount} deleted`);
           if (deleteResult.deletedCount === 1) {
-            return res.json({ success: true });
+            console.log(`[DELETE] Successfully deleted with ObjectId`);
+            return res.json({ success: true, message: 'Deleted using ObjectId' });
           }
         } catch (e) {
-          console.log(`ObjectId deletion failed, trying alternatives`, e.message);
-          // Fall through to next approach
+          console.log(`[DELETE] ObjectId attempt failed:`, e.message);
         }
       }
       
       // Try as string id field
-      console.log(`Trying to delete as id field: ${id}`);
+      console.log(`[DELETE] Attempting id field format: ${id}`);
       deleteResult = await registrationsCollection.deleteOne({ id: id });
-      console.log(`id field delete result: ${deleteResult.deletedCount} deleted`);
+      console.log(`[DELETE] id field attempt result: ${deleteResult.deletedCount} deleted`);
       if (deleteResult.deletedCount === 1) {
-        return res.json({ success: true });
+        console.log(`[DELETE] Successfully deleted with id field`);
+        return res.json({ success: true, message: 'Deleted using id field' });
       }
       
       // Try as _id string
-      console.log(`Trying to delete as _id string: ${id}`);
+      console.log(`[DELETE] Attempting _id string format: ${id}`);
       deleteResult = await registrationsCollection.deleteOne({ _id: id });
-      console.log(`_id string delete result: ${deleteResult.deletedCount} deleted`);
+      console.log(`[DELETE] _id string attempt result: ${deleteResult.deletedCount} deleted`);
       if (deleteResult.deletedCount === 1) {
-        return res.json({ success: true });
+        console.log(`[DELETE] Successfully deleted with _id string`);
+        return res.json({ success: true, message: 'Deleted using _id string' });
       }
       
       // If nothing found
-      console.log(`No registration found with ID: ${id}`);
+      console.log(`[DELETE] No registration found with ID: ${id}`);
       res.status(404).json({ error: 'Registration not found' });
     } catch (err) {
-      console.error('Delete error', err);
-      res.status(500).json({ error: 'Failed to delete registration' });
+      console.error('[DELETE] Error:', err);
+      res.status(500).json({ error: 'Failed to delete registration: ' + err.message });
     }
   });
 
