@@ -119,7 +119,7 @@ async function start() {
 
   // Health endpoint
   app.get('/api/health', (_req, res) => {
-    res.json({ dbConnected, usingMongo: true });
+    res.json({ dbConnected, usingMongo: true, timestamp: new Date().toISOString() });
   });
 
   app.delete('/api/registrations/:id', async (req, res) => {
