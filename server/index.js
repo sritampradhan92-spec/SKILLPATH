@@ -61,10 +61,6 @@ async function start() {
     });
 
     app.delete('/api/registrations/:id', async (req, res) => {
-      const key = req.headers['x-admin-key'] || req.query.adminKey;
-      if (key !== ADMIN_KEY) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
       const id = req.params.id;
       const idx = inMemory.findIndex(d => String(d.id) === String(id));
       if (idx === -1) return res.status(404).json({ error: 'Not found' });
